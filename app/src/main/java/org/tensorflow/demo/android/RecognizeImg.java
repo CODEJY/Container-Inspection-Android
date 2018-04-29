@@ -2,6 +2,7 @@ package org.tensorflow.demo.android;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.SystemClock;
 import android.util.EventLog;
 
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
@@ -21,18 +22,21 @@ public class RecognizeImg {
     private static final int CHANNEL = 1;
     private float[] inputs = new float[HEIGHT*WIDTH*CHANNEL];
     private long[] outputs = new long[11];
-
+    private long lastTimeMs;
     private TensorFlowInferenceInterface inferenceInterface;
     RecognizeImg(Context context) {
         inferenceInterface = new TensorFlowInferenceInterface(context.getAssets(),MODEL_FILE);
     }
     public void recognize(float[] pixelData){
+        final long startTime = SystemClock.uptimeMillis();
         inputs=pixelData;
 
         inferenceInterface.feed(input_layer,inputs,1,16384);
         inferenceInterface.run(new String[] { output_layer }, false);//输出张量
         byte[] outPuts = new byte[88];
         inferenceInterface.fetch(output_layer,outPuts);
+        lastTimeMs = SystemClock.uptimeMillis() - startTime;
+        EventBus.getDefault().post(new RecognizeEvents(lastTimeMs));
         long[] tOutputs=new long[11];
         //提取输出数据，每8个byte都是一样的，所以只取首个byte
         for (int i=0;i<11;i++)
@@ -56,6 +60,7 @@ public class RecognizeImg {
             }
             outputStr+= (char)char_code;
         }
+
         EventBus.getDefault().post(outputStr);
     }
 

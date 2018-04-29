@@ -45,6 +45,8 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextClock;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -53,6 +55,7 @@ import java.util.Map;
 import org.tensorflow.demo.android.env.ImageUtils;
 import org.tensorflow.demo.android.env.Logger;
 import org.tensorflow.demo.android.R; // Explicit import needed for internal Google builds.
+import org.tensorflow.demo.android.tracking.DetectEvents;
 
 import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
@@ -88,6 +91,8 @@ public abstract class CameraActivity extends Activity
   private Button capture;
   private BitmapHandle bitmapHandle;
   private RecognizeImg recognizeImg;
+  private TextView tv_detect;
+  private TextView tv_recognize;
   private final Map<Character,Integer> mapValue= new HashMap<Character, Integer>();
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
@@ -98,7 +103,8 @@ public abstract class CameraActivity extends Activity
     imgView = (ImageView)findViewById(R.id.imgView);
     output_edit = (EditText)findViewById(R.id.output_edit);
     capture = (Button)findViewById(R.id.capture);
-
+    tv_detect = (TextView)findViewById(R.id.tv_detector);
+    tv_recognize = (TextView)findViewById(R.id.tv_recognize);
     bitmapHandle = new BitmapHandle();
     recognizeImg = new RecognizeImg(this);
     capture.setOnClickListener(new View.OnClickListener() {
@@ -155,6 +161,14 @@ public abstract class CameraActivity extends Activity
       }
     }).start();
     imgView.setImageBitmap(bitmap);
+  }
+  @Subscribe(threadMode = ThreadMode.MainThread)
+  public void receiveDetectTimeCost(DetectEvents detectEvents) {
+    tv_detect.setText("区域检测耗时： " + detectEvents.timecost+"ms");
+  }
+  @Subscribe(threadMode = ThreadMode.MainThread)
+  public void receiveRecognizeTimeCost(RecognizeEvents recognizeEvents) {
+    tv_recognize.setText("文本识别耗时： " + recognizeEvents.timecost+"ms");
   }
   @Subscribe(threadMode = ThreadMode.MainThread)
   public void receivedOutput(String output) {

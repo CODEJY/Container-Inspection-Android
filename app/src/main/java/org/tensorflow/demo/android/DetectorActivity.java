@@ -40,6 +40,7 @@ import org.tensorflow.demo.android.OverlayView.DrawCallback;
 import org.tensorflow.demo.android.env.BorderedText;
 import org.tensorflow.demo.android.env.ImageUtils;
 import org.tensorflow.demo.android.env.Logger;
+import org.tensorflow.demo.android.tracking.DetectEvents;
 import org.tensorflow.demo.android.tracking.MultiBoxTracker;
 
 import de.greenrobot.event.EventBus;
@@ -250,7 +251,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     final long startTime = SystemClock.uptimeMillis();
                     final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
                     lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
-
+                    EventBus.getDefault().post(new DetectEvents(lastProcessingTimeMs));
                     cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
                     final Canvas canvas = new Canvas(cropCopyBitmap);
                     final Paint paint = new Paint();
